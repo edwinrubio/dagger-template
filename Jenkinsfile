@@ -1,5 +1,5 @@
 pipeline {
-
+  agent { label 'dagger' }
   
   environment {
     //https://www.jenkins.io/doc/book/pipeline/jenkinsfile/#handling-credentials
@@ -13,7 +13,7 @@ pipeline {
     stage("do") {
       steps {
         sh '''
-            dagger-cue do hello --log-format=plain
+            dagger do hello --log-format=plain
         '''
       }
     }
