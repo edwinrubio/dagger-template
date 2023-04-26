@@ -12,9 +12,11 @@ pipeline {
   stages {
     stage("do") {
       steps {
-        sh '''
-            dagger do hello --log-format=plain
-        '''
+        node('dagger') {
+          sh '''
+              dagger do hello --log-format=plain
+          '''
+        }
       }
     }
   }
