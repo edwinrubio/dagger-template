@@ -12,9 +12,12 @@ pipeline {
   stages {
     stage("do") {
       steps {
-        node('dagger') {
+        container('dagger') {
           sh '''
-              dagger do hello --log-format=plain
+              cd Go
+              go get dagger.io/dagger@latest
+              go mod tidy
+              go run main.go
           '''
         }
       }
