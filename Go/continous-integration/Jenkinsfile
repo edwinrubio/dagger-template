@@ -14,6 +14,7 @@ pipeline {
       steps {
         container('dagger') {
           sh '''
+              cd Go/continous-integration
               go get dagger.io/dagger@latest
               go mod tidy
               go run continous-integration.go
