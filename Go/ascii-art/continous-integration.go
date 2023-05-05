@@ -33,14 +33,15 @@ func build(ctx context.Context) error {
     // create empty directory to put build outputs
     outputs := client.Directory()
 
+    //especificamos la imagen que vamos a usar
     sonar := client.Container().From("sonarsource/sonar-scanner-cli:4.8")
 
 	sonar = sonar.WithDirectory("ascii-art-cmd", src).WithWorkdir("ascii-art-cmd")
 
+    //Ejecutamos el cliente de sonarqube
     sonar = sonar.WithExec([]string{"sonar-scanner", "-X"})
 
     path := fmt.Sprintf(".")
-
 
 
     // get reference to build output directory in container
@@ -72,6 +73,27 @@ func build(ctx context.Context) error {
     // write build artifacts to host
     _, err = outputs.Export(ctx, "./ascii-art-cmd")
 
+    //Especificando el directorio de trabajo
+	src = client.Host().Directory("ascii-art-cmd")
+
+	if err != nil {
+		fmt.Printf("Error getting reference to host directory: %s", err)
+		os.Exit(1)
+	}
+
+    //Definiendo la imagen de trabajo
+	golang = client.Container().From("golang:latest")
+
+	cn, err := client.Container().
+		Build(src).
+		Publish(ctx, "allfait/ascii-art-cmd:latest")
+    
+	if err != nil {
+		fmt.Printf("Error creating and pushing container: %s", err)
+		os.Exit(1)
+    }
+
+    fmt.Print("Contenedor creado y pusheado: %s", cn)
 
     if err != nil {
         return err
