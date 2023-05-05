@@ -7,7 +7,7 @@
 *.dll
 *.so
 *.dylib
-
+.DS_Store
 **/.scannerwork
 
 
