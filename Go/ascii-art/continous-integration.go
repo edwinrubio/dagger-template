@@ -70,14 +70,14 @@ func build(ctx context.Context) error {
         }
     }
     
-    // write build artifacts to host
+    // Guardando los artefactos resultado de la compilacion
     _, err = outputs.Export(ctx, "./ascii-art-cmd")
 
     //Especificando el directorio de trabajo
 	src = client.Host().Directory("ascii-art-cmd")
 
 	if err != nil {
-		fmt.Printf("Error getting reference to host directory: %s", err)
+		fmt.Printf("Error obteniendo la refenrencia del directorio host: %s", err)
 		os.Exit(1)
 	}
 
@@ -89,7 +89,7 @@ func build(ctx context.Context) error {
 		Publish(ctx, "allfait/ascii-art-cmd:latest")
     
 	if err != nil {
-		fmt.Printf("Error creating and pushing container: %s", err)
+		fmt.Printf("Error creando y empujando el contenedor: %s", err)
 		os.Exit(1)
     }
 
