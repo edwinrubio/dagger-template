@@ -11,6 +11,10 @@ func main() {
     if err := build(context.Background()); err != nil {
         fmt.Println(err)
     }
+
+    if err := sonarScan(context.Background()); err != nil {
+        fmt.Println(err)
+    }
 }
 
 func build(ctx context.Context) error {
@@ -32,17 +36,6 @@ func build(ctx context.Context) error {
 
     // create empty directory to put build outputs
     outputs := client.Directory()
-
-    sonar := client.Container().From("sonarsource/sonar-scanner-cli:4.8")
-
-	sonar = sonar.WithDirectory(".", src).WithWorkdir(".")
-
-    path := fmt.Sprintf(".")
-
-	sonar = sonar.WithExec([]string{"sonar-scanner"})
-
-    // get reference to build output directory in container
-    outputs = outputs.WithDirectory(path, sonar.Directory(path))
 
     // get `golang` image
     golang := client.Container().From("golang:latest")
@@ -71,6 +64,42 @@ func build(ctx context.Context) error {
     _, err = outputs.Export(ctx, ".")
 
 
+    if err != nil {
+        return err
+    }
+
+    return nil
+}
+
+
+func sonarScan(ctx context.Context) error {
+    fmt.Println("Scanning with Sonar")
+
+    // initialize Dagger client
+    client, err := dagger.Connect(ctx, dagger.WithLogOutput(os.Stdout))
+    if err != nil {
+        return err
+    }
+    defer client.Close()
+
+    src := client.Host().Directory(".")
+
+    // create empty directory to put build outputs
+    outputs := client.Directory()
+
+    sonar := client.Container().From("sonarsource/sonar-scanner-cli:4.8")
+
+	sonar = sonar.WithDirectory(".", src).WithWorkdir(".")
+
+    path := fmt.Sprintf(".")
+
+	sonar = sonar.WithExec([]string{"sonar-scanner"})
+
+    // get reference to build output directory in container
+    outputs = outputs.WithDirectory(path, sonar.Directory(path))
+
+    // write build artifacts to host
+    _, err = outputs.Export(ctx, ".")
     if err != nil {
         return err
     }
