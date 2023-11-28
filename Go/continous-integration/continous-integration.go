@@ -18,49 +18,49 @@ func main() {
 }
 
 func build(ctx context.Context) error {
-    fmt.Println("Building with Dagger")
+    fmt.Println("Construyendo con dagger")
 
-    // define build matrix
+    // Definiendo la matriz de compilacion
     oses := []string{"linux", "darwin"}
     arches := []string{"amd64", "arm64"}
 
-    // initialize Dagger client
+    // Inicializando el cliente de dagger
     client, err := dagger.Connect(ctx, dagger.WithLogOutput(os.Stdout))
     if err != nil {
         return err
     }
     defer client.Close()
 
-    // get reference to the local project
-    src := client.Host().Directory(".")
+    // Obteniendo la referencia la proyecto local
+    src := client.Host().Directory("./aplication/aplication.go")
 
-    // create empty directory to put build outputs
+    // Creando un directorio vacio para poner las salidas
     outputs := client.Directory()
 
-    // get `golang` image
+    // obteniendo la ultima imagen de golang
     golang := client.Container().From("golang:latest")
 
-    // mount cloned repository into `golang` image
+    // montando el codigo en el contenedor de go
     golang = golang.WithDirectory("/src", src).WithWorkdir("/src")
 
     for _, goos := range oses {
         for _, goarch := range arches {
-            // create a directory for each os and arch
+            // creando un directorio para cada tipo de arquitectura
             path := fmt.Sprintf("build/%s/%s/", goos, goarch)
 
-            // set GOARCH and GOOS in the build environment
+            // seteando GOARCH y GOOS en el ambiente de compilacion
             build := golang.WithEnvVariable("GOOS", goos)
             build = build.WithEnvVariable("GOARCH", goarch)
 
-            // build application
+            // compilar la aplicacion
             build = build.WithExec([]string{"go", "build", "-o", path})
 
-            // get reference to build output directory in container
+            // obteniendo la referencia de la compilacion de salida en el directorio del contenedor
             outputs = outputs.WithDirectory(path, build.Directory(path))
         }
     }
     
-    // write build artifacts to host
+    // guardando los artefactos del compilacion en el host
     _, err = outputs.Export(ctx, ".")
 
 
@@ -75,7 +75,7 @@ func build(ctx context.Context) error {
 func sonarScan(ctx context.Context) error {
     fmt.Println("Scanning with Sonar")
 
-    // initialize Dagger client
+    // Inicilizando el cliente de dagger
     client, err := dagger.Connect(ctx, dagger.WithLogOutput(os.Stdout))
     if err != nil {
         return err
@@ -84,21 +84,25 @@ func sonarScan(ctx context.Context) error {
 
     src := client.Host().Directory(".")
 
-    // create empty directory to put build outputs
+    // Creando un directorio para poner las salidas
     outputs := client.Directory()
 
+    // Obteniendo la imagen del cliente de sonnar scanner
     sonar := client.Container().From("sonarsource/sonar-scanner-cli:4.8")
 
+    // montando el codigo en el contenedor de sonar
 	sonar = sonar.WithDirectory(".", src).WithWorkdir(".")
 
+    // creando un directorio para guardar lasa salidas
     path := fmt.Sprintf(".")
 
+    //ejecutamos el agente de sonnar
 	sonar = sonar.WithExec([]string{"sonar-scanner"})
 
-    // get reference to build output directory in container
+    // obteniendo la referencia de la compilacion de salida en el directorio del contenedor
     outputs = outputs.WithDirectory(path, sonar.Directory(path))
 
-    // write build artifacts to host
+    // guardando las salidas dentro del host
     _, err = outputs.Export(ctx, ".")
     if err != nil {
         return err

@@ -72,7 +72,7 @@ dagger.#Plan & {
                     env: {
                         GITHUB_BRANCH_NAME: "main"
                         SONAR_LOGIN:        client.env.SONAR_LOGIN
-                        SONAR_HOST_URL:     "http://192.168.0.6:9000"
+                        SONAR_HOST_URL:     "http://192.168.0.5:9000"
                     }
                     workdir: "/usr/src"
                     input:   deps.sonarscanner.output

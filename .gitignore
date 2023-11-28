@@ -9,7 +9,7 @@
 *.dylib
 .DS_Store
 **/.scannerwork
-
+**/build
 
 # Test binary, built with `go test -c`
 *.test
